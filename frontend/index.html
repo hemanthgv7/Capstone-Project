@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>2-Tier Web App</title>
+</head>
+<body>
+  <h1>2-Tier Web Application</h1>
+  <button onclick="loadMessage()">Call Backend</button>
+  <p id="result"></p>
+
+  <script>
+    function loadMessage() {
+      fetch("http://backend:5000/message")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("result").innerText = data.message;
+        })
+        .catch(err => {
+          document.getElementById("result").innerText = "Backend not reachable";
+        });
+    }
+  </script>
+</body>
+</html>
