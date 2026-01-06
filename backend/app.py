@@ -3,7 +3,7 @@ from flask_cors import CORS
 from db import get_connection
 
 app = Flask(__name__)
-CORS(app)   # 🔥 THIS LINE FIXES IT
+CORS(app)   
 
 @app.route("/health")
 def health():

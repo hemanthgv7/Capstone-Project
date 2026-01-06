@@ -1,17 +1,82 @@
-name: CI Pipeline
+name: Full CI-CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  BACKEND_IMAGE: yourdockerhub/backend-api
+  FRONTEND_IMAGE: yourdockerhub/frontend-ui
 
 jobs:
-  test:
+  ci-cd:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # ---------------------------
+    # Checkout
+    # ---------------------------
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Test trigger
-        run: echo "GitHub Actions trigger works"
+    # ---------------------------
+    # Docker setup
+    # ---------------------------
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+
+    # ---------------------------
+    # Docker Hub login
+    # ---------------------------
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # ---------------------------
+    # Build images
+    # ---------------------------
+    - name: Build Backend Image
+      run: docker build -t $BACKEND_IMAGE:staging ./backend
+
+    - name: Build Frontend Image
+      run: docker build -t $FRONTEND_IMAGE:staging ./frontend
+
+    # ---------------------------
+    # Test backend
+    # ---------------------------
+    - name: Test Backend Health
+      run: |
+        docker run -d -p 5000:5000 --name backend_test $BACKEND_IMAGE:staging
+        sleep 10
+        curl -f http://localhost:5000/health
+        docker rm -f backend_test
+
+    # ---------------------------
+    # Security scan
+    # ---------------------------
+    - name: Trivy Scan Backend
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.BACKEND_IMAGE }}:staging
+        severity: HIGH,CRITICAL
+        exit-code: 0
+
+    # ---------------------------
+    # Push images
+    # ---------------------------
+    - name: Push Backend Image
+      run: docker push $BACKEND_IMAGE:staging
+
+    - name: Push Frontend Image
+      run: docker push $FRONTEND_IMAGE:staging
+
+    # ---------------------------
+    # Deploy to staging
+    # ---------------------------
+    - name: Deploy to Staging
+      run: |
+        docker compose down
+        docker compose up -d

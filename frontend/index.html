@@ -10,7 +10,7 @@
 
   <script>
     function loadMessage() {
-      fetch("http://backend:5000/message")
+      fetch("http://localhost:5000/message")
         .then(res => res.json())
         .then(data => {
           document.getElementById("result").innerText = data.message;
