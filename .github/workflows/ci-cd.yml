@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  BACKEND_IMAGE: yourdockerhub/backend-api
-  FRONTEND_IMAGE: yourdockerhub/frontend-ui
+  BACKEND_IMAGE: hemanthgv295/backend-api
+  FRONTEND_IMAGE: hemanthgv295/frontend-ui
 
 jobs:
   ci-cd:
