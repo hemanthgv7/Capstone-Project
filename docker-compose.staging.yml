@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - env/staging.env
+    depends_on:
+      - db
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    container_name: frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
